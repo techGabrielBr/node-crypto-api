@@ -46,4 +46,24 @@ export default class UsersController {
             });
         }
     }
+
+    static getAll = async function (req: Request, res: Response, next: NextFunction) {
+        try {
+            let users = await prisma.user.findMany({
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    active: true,
+                    password: false
+                }
+            });
+
+            res.status(200).send(users);
+        } catch (error) {
+            res.status(500).send({
+                message: "Internal server error"
+            });
+        }
+    }
 }
