@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import CryptoService from "../utils/cryptoService";
 import User from "../Models/User";
 import prisma from "../config/dbConnection";
+import { Prisma } from "@prisma/client";
 
 export default class UsersController {
     static createUser = async function (req: Request, res: Response, next: NextFunction){
@@ -18,6 +19,14 @@ export default class UsersController {
                 message: "User created successfully"
             });
         } catch (error) {
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                if (error.code === 'P2002') {
+                    return res.status(400).send({
+                        message: "Email já cadastrado"
+                    });
+                }
+            }
+            
             res.status(500).send({
                 message: "Internal server error"
             });
