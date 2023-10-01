@@ -14,10 +14,12 @@ export default class UsersController {
                 data: user
             });
 
-            res.status(201).send(createdUser);
+            res.status(201).send({
+                message: "User created successfully"
+            });
         } catch (error) {
             res.status(500).send({
-                message: "Erro interno no servidor"
+                message: "Internal server error"
             });
         }
     }
@@ -40,7 +42,7 @@ export default class UsersController {
             }
         } catch (error) {
             res.status(500).send({
-                message: "Erro interno no servidor"
+                message: "Internal server error"
             });
         }
     }
