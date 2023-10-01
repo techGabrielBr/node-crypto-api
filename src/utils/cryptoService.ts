@@ -1,4 +1,5 @@
-import * as crypto from "crypto";
+import * as crypto from "crypto";   
+import "dotenv/config";
 
 export default class CryptoService {
     static encryptText = function(data: string){
@@ -35,10 +36,12 @@ export default class CryptoService {
     }
 }
 
+const ENV = process.env;
+
 const CRYPTO_CONFIG = {
-    secretKey: Buffer.from("0a308b28053c4eae27bd6f16ce486515d5c1bc1fb08d91afd844d4317f7b2767", "hex") as crypto.CipherKey,
-    iv: Buffer.from("1e04e6b4f08e97b06c58085944c6e75b", "hex") as crypto.BinaryLike,
-    algorithm: "aes-256-cbc" as string,
-    outputEncoding: "hex" as crypto.Encoding,
-    inputEncoding: "utf-8" as crypto.Encoding
+    secretKey: Buffer.from(ENV.SECRET_KEY as WithImplicitCoercion<string>, ENV.OUTPUT_ENCODING as BufferEncoding) as crypto.CipherKey,
+    iv: Buffer.from(ENV.IV as WithImplicitCoercion<string>, ENV.OUTPUT_ENCODING as BufferEncoding) as crypto.BinaryLike,
+    algorithm: ENV.ALGORITHM as string,
+    outputEncoding: ENV.OUTPUT_ENCODING as crypto.Encoding,
+    inputEncoding: ENV.INPUT_ENCODING as crypto.Encoding
 }
