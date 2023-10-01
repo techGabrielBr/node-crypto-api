@@ -3,11 +3,17 @@ import CryptoService from "../utils/cryptoService";
 import User from "../Models/User";
 import prisma from "../config/dbConnection";
 import { Prisma } from "@prisma/client";
+import { registerUserSchema } from "../yup-schemas/registerUserSchema";
+import { ValidationError } from "yup";
+import { authUserSchema } from "../yup-schemas/authUserSchema";
 
 export default class UsersController {
     static createUser = async function (req: Request, res: Response, next: NextFunction){
         try {
             const user: User = req.body;
+            
+            registerUserSchema.validateSync(user, {abortEarly: false, stripUnknown: true, strict: true})
+
             user.password = CryptoService.encryptText(user.password);
             user.active = true;
 
@@ -19,12 +25,22 @@ export default class UsersController {
                 message: "User created successfully"
             });
         } catch (error) {
+            console.log(error);
+            
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
                 if (error.code === 'P2002') {
                     return res.status(400).send({
-                        message: "Email já cadastrado"
+                        message: "Email already registered"
                     });
                 }
+            }else if(error instanceof Prisma.PrismaClientValidationError){
+                return res.status(422).send({
+                    message: "Make sure all data is being provided correctly"
+                });
+            }else if(error instanceof ValidationError){
+                return res.status(422).send({
+                    message: error.errors
+                });
             }
             
             res.status(500).send({
@@ -35,11 +51,14 @@ export default class UsersController {
 
     static authUser = async function (req: Request, res: Response, next: NextFunction){
         try {
-            const {email, password} = req.body;
-            const encryptedPassword = CryptoService.encryptText(password);
+            const {body} = req;
+
+            authUserSchema.validateSync(body, { abortEarly: false, stripUnknown: true, strict: true })
+
+            const encryptedPassword = CryptoService.encryptText(body.password);
 
             let user = await prisma.user.findUnique({
-                where: {email: email, password: encryptedPassword}
+                where: {email: body.email, password: encryptedPassword}
             });
 
             if(user != null){
@@ -50,6 +69,16 @@ export default class UsersController {
                 });
             }
         } catch (error) {
+            if (error instanceof Prisma.PrismaClientValidationError) {
+                return res.status(422).send({
+                    message: "Make sure all data is being provided correctly"
+                });
+            } else if (error instanceof ValidationError) {
+                return res.status(422).send({
+                    message: error.errors
+                });
+            }
+
             res.status(500).send({
                 message: "Internal server error"
             });

@@ -1,5 +1,5 @@
 # API Node.JS - Crypto
-API using Express, Prisma, Crypto Module and Typescript
+API using Express, Prisma, Crypto Module, Yup and Typescript
 
 ## Init
 Run `npm run init-server`
